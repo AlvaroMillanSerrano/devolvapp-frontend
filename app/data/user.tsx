@@ -1,18 +1,18 @@
 export interface User {
     id: number;
-    u_name: string;
+    name: string;
     surname: string;
-    dni: string;
-    number: string;
+    idCard: string;
+    phoneNumber: string;
     email: string;
-    u_role: "admin" | "cliente" | "recogedor";
-    wallet_quantity: number;
+    rol: "admin" | "cliente" | "recogedor";
+    wallet: number;
     city: string;
     street: string;
     building: string;
     floor: string;
     letter: string;
     zip_code: string;
-    creation_date: string;
+    created_at: string;
     isActive: boolean;
 }
