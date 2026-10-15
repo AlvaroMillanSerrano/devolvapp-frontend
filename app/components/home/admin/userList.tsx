@@ -1,26 +1,9 @@
-import { useState } from "react"
 import DataTable, { type TableColumn } from "react-data-table-component";
+import type { User } from "~/data/user";
+import { useUsers } from "~/hooks/useUsers";
 
-interface User {
-    id: number;
-    u_name: string;
-    surname: string;
-    dni: string;
-    number: string;
-    email: string;
-    u_role: "admin" | "cliente" | "recogedor";
-    wallet_quantity: number;
-    city: string;
-    street: string;
-    building: string;
-    floor: string;
-    letter: string;
-    zip_code: string;
-    creation_date: string;
-    isActive: boolean;
-}
 export const UserList = () => {
-    const [usuarios, setUsuarios] = useState([]);
+    const { users, loading, error } = useUsers();
 
     const data: User[] = [
         {
@@ -76,11 +59,14 @@ export const UserList = () => {
         {name: "creation_date", selector: (row) => row.creation_date},
         {name: "isActive", selector: (row) => row.isActive ? "true" : "false"}
     ];
+    if (loading) return <p>Cargando...</p>;
+    if (error) return <p>Error: {error}</p>;
+
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h2>Listado de Usuarios</h2>
             <div>
-                <DataTable columns={columns} data={data} pagination />
+                <DataTable columns={columns} data={users} pagination />
             </div>
         </div>
     );
