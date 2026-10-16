@@ -11,8 +11,6 @@
     "docs": "node scripts/generar-docs.mjs"
   },
   "dependencies": {
-    "@react-router/node": "^8.4.0",
-    "@react-router/serve": "^8.4.0",
     "axios": "^1.20.0",
     "leaflet": "^1.9.4",
     "isbot": "^5.1.36",
