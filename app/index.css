@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior: none;
+    font-family: Inter, system-ui, sans-serif;
+    @apply bg-background text-on-surface antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: 'Plus Jakarta Sans', Inter, sans-serif;
+  }
+}
+
+/* Piezas básicas de la interfaz (estilo app de reparto: tarjetas blancas, botones redondeados) */
+@layer components {
+  .card {
+    @apply bg-surface-container-lowest rounded-2xl shadow-[0_1px_3px_rgba(19,27,46,0.06)] p-4 sm:p-5;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full font-semibold text-[15px] transition-all active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap;
+  }
+  .btn-lg {
+    @apply h-14 px-6 text-base;
+  }
+  .btn-sm {
+    @apply h-9 px-4 text-sm;
+  }
+  .btn-primary {
+    @apply bg-primary text-on-primary hover:bg-primary-container shadow-sm;
+  }
+  .btn-secondary {
+    @apply bg-surface-container text-on-surface hover:bg-surface-container-high;
+  }
+  .btn-ghost {
+    @apply text-primary hover:bg-primary/10;
+  }
+  .btn-danger {
+    @apply bg-error-container text-on-error-container hover:bg-error hover:text-on-error;
+  }
+  .input {
+    @apply w-full h-11 px-3 rounded-xl bg-surface-container-low text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all;
+  }
+  .label {
+    @apply text-sm font-semibold text-on-surface;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-sm font-medium bg-surface-container-lowest text-on-surface-variant shadow-[0_1px_2px_rgba(19,27,46,0.06)] hover:bg-surface-container whitespace-nowrap transition-colors;
+  }
+  .chip-active {
+    @apply bg-on-surface text-surface-container-lowest hover:bg-on-surface;
+  }
+}
+
+/* Barras de scroll ocultas */
+::-webkit-scrollbar {
+  display: none;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  user-select: none;
+}
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Cifras alineadas en importes y contadores (DESIGN.md › Typography) */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------
+ * Resaltado de ZONAS DINÁMICAS (solo desarrollo).
+ * Cada bloque que pinta datos del servidor lleva el atributo
+ *   data-dyn="Z2 · GET /api/ciudadano/resumen"
+ * El botón flotante "Zonas dinámicas" activa <html data-show-dyn>.
+ * ------------------------------------------------------------------ */
+html[data-show-dyn] [data-dyn] {
+  outline: 2px dashed #d97706;
+  outline-offset: 2px;
+}
+html[data-show-dyn] [data-dyn]:not(.absolute):not(.fixed):not(.sticky) {
+  position: relative;
+}
+html[data-show-dyn] [data-dyn]::after {
+  content: attr(data-dyn);
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 45;
+  max-width: calc(100% - 4px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #d97706;
+  color: #fff;
+  font: 600 10px/14px ui-monospace, Consolas, monospace;
+  letter-spacing: 0;
+  text-transform: none;
+  pointer-events: none;
+}
