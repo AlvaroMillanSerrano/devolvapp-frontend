@@ -7,12 +7,12 @@ export const direccionAForm = (d) =>
   d ? Object.fromEntries(Object.keys(DIRECCION_VACIA).map((k) => [k, d[k] ?? DIRECCION_VACIA[k] ?? ''])) : { ...DIRECCION_VACIA }
 
 /** Validación de cliente (solo UX: el backend la repite) */
-export function validarDireccion(d) {
+export function validarDireccion(d, { codigoPostalOpcional = false } = {}) {
   const e = {}
   if (!d.tipoVia) e.tipoVia = 'Obligatorio'
   if (!d.nombreVia.trim()) e.nombreVia = 'Falta el nombre de la vía'
   if (!d.numero.trim()) e.numero = 'Falta el número'
-  if (!/^(0[1-9]|[1-4]\d|5[0-2])\d{3}$/.test(d.codigoPostal.trim())) e.codigoPostal = 'Código postal no válido'
+  if ((!codigoPostalOpcional || d.codigoPostal.trim()) && !/^(0[1-9]|[1-4]\d|5[0-2])\d{3}$/.test(d.codigoPostal.trim())) e.codigoPostal = 'Código postal no válido'
   if (!d.ciudad.trim()) e.ciudad = 'Falta la ciudad'
   return e
 }

@@ -68,7 +68,9 @@ export default function PedidoDetallePage() {
                 <div>
                   <p className="text-sm text-on-surface-variant">Pedido {p.codigo}</p>
                   <h1 className="text-xl font-bold">
-                    {formatRelativeDay(p.fecha)}, {formatFranja(p.horaInicio, p.horaFin)}
+                    {p.fecha && p.horaInicio && p.horaFin
+                      ? `${formatRelativeDay(p.fecha)}, ${formatFranja(p.horaInicio, p.horaFin)}`
+                      : 'Pendiente de programación'}
                   </h1>
                   <p className="text-sm text-on-surface-variant mt-1">{formatDireccion(p.direccion)}</p>
                 </div>
@@ -138,9 +140,11 @@ export default function PedidoDetallePage() {
                 <div key={b.id} className="flex items-center gap-3 py-2.5 border-t border-surface-container first:border-0">
                   <span className="font-mono font-bold tracking-wider text-sm bg-surface-container-low px-2 py-1 rounded-lg">{b.codigo}</span>
                   <span className="flex-1 min-w-0 text-sm">
-                    <span className="block font-medium">{nombreTipo(b.tipoEnvase)}</span>
+                    <span className="block font-medium">
+                      {Object.entries(b.contenidos ?? {}).map(([codigo, cantidad]) => `${nombreTipo(codigo)}: ${cantidad}`).join(' · ') || nombreTipo(b.tipoEnvase)}
+                    </span>
                     <span className="block text-on-surface-variant">
-                      {b.cantidad} de {b.capacidadMaxima} máx.
+                      {b.cantidad} envases · capacidad {b.capacidadMaxima}
                       {b.resultado && b.resultado !== 'ACEPTADA' && ` · válidos: ${b.envasesValidos}`}
                     </span>
                   </span>

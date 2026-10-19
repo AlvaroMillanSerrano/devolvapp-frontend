@@ -12,8 +12,9 @@ export default function PedidoCard({ pedido: p }) {
       </span>
       <span className="flex-1 min-w-0">
         <span className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold">{formatRelativeDay(p.fecha)}</span>
-          <span className="text-sm text-on-surface-variant">{formatFranja(p.horaInicio, p.horaFin)}</span>
+          {p.fecha && p.horaInicio && p.horaFin ? (
+            <><span className="font-semibold">{formatRelativeDay(p.fecha)}</span><span className="text-sm text-on-surface-variant">{formatFranja(p.horaInicio, p.horaFin)}</span></>
+          ) : <span className="font-semibold">Pendiente de programación</span>}
         </span>
         <span className="block text-sm text-on-surface-variant">
           {p.codigo} · {p.numBolsas} {p.numBolsas === 1 ? 'bolsa' : 'bolsas'} · {p.totalEnvases} envases

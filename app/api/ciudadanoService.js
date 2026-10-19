@@ -33,9 +33,9 @@ export const ciudadanoService = {
 
   /**
    * HU-02.01 / HU-02.02 / HU-03.02 · POST /api/ciudadano/pedidos
-   * body: { bolsas: [{ tipoEnvase, cantidad }], fecha: 'YYYY-MM-DD', franjaId }
-   * 201 → detalle (genera el código del pedido y de cada bolsa) · 400 VALIDATION_ERROR (fieldErrors "bolsas[0].cantidad")
-   * 409 FRANJA_COMPLETA · 422 ZONA_SIN_SERVICIO
+   * body: { bolsas: [{ contenidos: { PET: 2, BRIK: 1 } }] }
+   * Fecha, zona y franja quedan sin asignar hasta una futura programación de la recogida.
+   * 201 → detalle con código del pedido y de cada bolsa.
    */
   crearPedido: mockable((data) => api.post('/ciudadano/pedidos', data).then(unwrap), (data) => m.crearPedido(data), { delay: 700 }),
 
