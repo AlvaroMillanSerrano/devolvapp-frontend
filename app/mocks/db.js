@@ -91,8 +91,12 @@ export function calcularLiquidacion(envasesValidos) {
 }
 
 /** kg de CO2e evitados por las bolsas verificadas de un pedido */
-export const co2DePedido = (p) =>
-  p.estado === 'COMPLETADA' ? p.bolsas.reduce((s, b) => s + (b.envasesValidos ?? 0) * PARAMETROS.impacto.kgCo2PorEnvase[b.tipoEnvase], 0) : 0
+export const co2DePedido = (p) => p.estado === 'COMPLETADA'
+  ? p.bolsas.reduce((sum, bag) => {
+      if (bag.contenidos) return sum + Object.entries(bag.contenidos).reduce((contents, [type, quantity]) => contents + quantity * PARAMETROS.impacto.kgCo2PorEnvase[type], 0)
+      return sum + (bag.envasesValidos ?? 0) * PARAMETROS.impacto.kgCo2PorEnvase[bag.tipoEnvase]
+    }, 0)
+  : 0
 
 /** Dirección con coordenadas (el backend las calcula al guardar la dirección) */
 export const conGeo = (d) => ({ ...d, ciudad: d.ciudad || 'Málaga', ...geocodificar(d) })
@@ -440,8 +444,15 @@ export function impactoDe(lista) {
   const porTipo = Object.fromEntries(TIPOS_ENVASE.map((t) => [t.codigo, { tipoEnvase: t.codigo, envases: 0, co2Kg: 0 }]))
   completados.forEach((p) =>
     p.bolsas.forEach((b) => {
-      porTipo[b.tipoEnvase].envases += b.envasesValidos ?? 0
-      porTipo[b.tipoEnvase].co2Kg += (b.envasesValidos ?? 0) * PARAMETROS.impacto.kgCo2PorEnvase[b.tipoEnvase]
+      if (b.contenidos) {
+        Object.entries(b.contenidos).forEach(([tipo, cantidad]) => {
+          porTipo[tipo].envases += cantidad
+          porTipo[tipo].co2Kg += cantidad * PARAMETROS.impacto.kgCo2PorEnvase[tipo]
+        })
+      } else {
+        porTipo[b.tipoEnvase].envases += b.envasesValidos ?? 0
+        porTipo[b.tipoEnvase].co2Kg += (b.envasesValidos ?? 0) * PARAMETROS.impacto.kgCo2PorEnvase[b.tipoEnvase]
+      }
     }),
   )
   const meses = Array.from({ length: 6 }, (_, i) => {

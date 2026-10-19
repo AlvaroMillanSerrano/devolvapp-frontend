@@ -48,7 +48,7 @@ export default function InicioPage() {
         </span>
         <span className="flex-1">
           <span className="block text-lg font-bold">Pedir recogida</span>
-          <span className="block text-sm text-white/80">Prepara tus bolsas y elige cuándo pasamos</span>
+          <span className="block text-sm text-white/80">Indica qué contiene cada bolsa y solicita la recogida</span>
         </span>
         <Icon name="arrow_forward" className="text-[24px]" />
       </Link>

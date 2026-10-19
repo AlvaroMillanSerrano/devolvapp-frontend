@@ -64,7 +64,7 @@ export default function RegistroPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     const v = validate(form)
-    const vd = validarDireccion(direccion)
+    const vd = validarDireccion(direccion, { codigoPostalOpcional: true })
     setErrors({ ...v, direccion: vd })
     if (Object.keys(v).length || Object.keys(vd).length) {
       setServerError('Revisa los campos marcados en rojo.')
@@ -134,7 +134,7 @@ export default function RegistroPage() {
           <legend className="font-label-sm text-label-sm uppercase tracking-wider text-tertiary font-semibold mb-space-sm flex items-center gap-1">
             <Icon name="home_pin" className="text-[16px] text-primary" /> Dirección de recogida
           </legend>
-          <DireccionFields value={direccion} onChange={setDireccion} errors={errors.direccion} />
+          <DireccionFields value={direccion} onChange={setDireccion} errors={errors.direccion} codigoPostalOpcional />
         </fieldset>
 
         <div className="flex flex-col gap-1">

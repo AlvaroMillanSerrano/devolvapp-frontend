@@ -53,10 +53,11 @@ export function detallePedidoCiudadano(p) {
     completadoEn: p.completadoEn,
     canceladoEn: p.canceladoEn,
     cancelable: p.estado === 'PENDIENTE',
-    bolsas: p.bolsas.map(({ id, codigo, tipoEnvase, cantidad, capacidadMaxima, resultado, envasesValidos }) => ({
+    bolsas: p.bolsas.map(({ id, codigo, tipoEnvase, contenidos, cantidad, capacidadMaxima, resultado, envasesValidos }) => ({
       id,
       codigo,
       tipoEnvase,
+      contenidos,
       cantidad,
       capacidadMaxima,
       resultado,
@@ -84,7 +85,11 @@ export const ciudadanoMock = {
     else if (estado) lista = lista.filter((p) => p.estado === estado)
     // Los activos, del más próximo al más lejano; el resto, del más reciente al más antiguo
     const orden = estado === 'ACTIVOS' ? 1 : -1
-    lista.sort((a, b) => orden * (a.fecha.localeCompare(b.fecha) || a.horaInicio.localeCompare(b.horaInicio)))
+    lista.sort((a, b) => {
+      const fechaA = a.fecha ?? a.creadoEn
+      const fechaB = b.fecha ?? b.creadoEn
+      return orden * fechaA.localeCompare(fechaB)
+    })
     return mockPage(lista.map(resumen), { page, size })
   },
 
@@ -109,51 +114,59 @@ export const ciudadanoMock = {
     return { codigoPostal: u.direccion.codigoPostal, zona: { id: zona.id, nombre: zona.nombre }, huecos }
   },
 
-  crearPedido({ bolsas, fecha, franjaId }) {
+  crearPedido({ bolsas }) {
     const u = yo()
-    const zona = zonaDeCp(u.direccion?.codigoPostal)
-    if (!zona) throw mockError(422, 'ZONA_SIN_SERVICIO', 'Todavía no hay recogidas en tu código postal.')
+    if (!u.direccion) throw mockError(422, 'DOMICILIO_REQUERIDO', 'Completa un domicilio antes de solicitar la recogida.')
     if (!bolsas?.length) throw mockError(400, 'VALIDATION_ERROR', 'Añade al menos una bolsa.')
     if (bolsas.length > PARAMETROS.pedidos.maxBolsas) throw mockError(400, 'VALIDATION_ERROR', `Máximo ${PARAMETROS.pedidos.maxBolsas} bolsas por pedido.`)
     const fieldErrors = {}
-    bolsas.forEach((b, i) => {
-      const tipo = TIPOS_ENVASE.find((t) => t.codigo === b.tipoEnvase)
-      if (!tipo) fieldErrors[`bolsas[${i}].tipoEnvase`] = 'Elige el tipo de envase'
-      else if (!(b.cantidad > 0)) fieldErrors[`bolsas[${i}].cantidad`] = 'La cantidad debe ser mayor que 0'
-      else if (b.cantidad > tipo.capacidadMaximaBolsa) fieldErrors[`bolsas[${i}].cantidad`] = `Máximo ${tipo.capacidadMaximaBolsa} envases por bolsa`
+    bolsas.forEach((bolsa, index) => {
+      const entries = Object.entries(bolsa.contenidos ?? {})
+      if (!entries.length) fieldErrors[`bolsas[${index}].contenidos`] = 'Añade al menos un tipo de envase'
+      entries.forEach(([codigo, raw]) => {
+        const tipo = TIPOS_ENVASE.find((item) => item.codigo === codigo)
+        const cantidad = Number(raw)
+        if (!tipo) fieldErrors[`bolsas[${index}].contenidos.${codigo}`] = 'Tipo de envase no válido'
+        else if (!Number.isInteger(cantidad) || cantidad <= 0) fieldErrors[`bolsas[${index}].contenidos.${codigo}`] = 'La cantidad debe ser mayor que cero'
+        else if (cantidad > tipo.capacidadMaximaBolsa) fieldErrors[`bolsas[${index}].contenidos.${codigo}`] = `Máximo ${tipo.capacidadMaximaBolsa} envases por tipo`
+      })
     })
-    if (Object.keys(fieldErrors).length) throw mockError(400, 'VALIDATION_ERROR', 'Revisa las bolsas.', fieldErrors)
-    const f = franjas.find((x) => x.id === franjaId && x.zonaId === zona.id)
-    if (!f || f.diaSemana !== diaSemana(fecha) || !recolectorPara(zona, fecha)) throw mockError(400, 'FRANJA_NO_VALIDA', 'Esa franja ya no está disponible.')
-    if (ocupacion(fecha, f.id) >= f.capacidad) throw mockError(409, 'FRANJA_COMPLETA', 'Esa franja se acaba de completar. Elige otra.')
+    if (Object.keys(fieldErrors).length) throw mockError(400, 'VALIDATION_ERROR', 'Revisa el contenido de las bolsas.', fieldErrors)
 
     const id = nextIds.pedido()
     const p = {
       id,
       codigo: `P-${id}`,
       ciudadanoId: u.id,
-      zonaId: zona.id,
-      recolectorId: recolectorPara(zona, fecha), // HU-07.06: el recolector asignado a la zona ese día de la semana
+      zonaId: null,
+      recolectorId: null,
       direccion: { ...u.direccion },
-      fecha,
-      franjaId: f.id,
-      horaInicio: f.horaInicio,
-      horaFin: f.horaFin,
+      fecha: null,
+      franjaId: null,
+      horaInicio: null,
+      horaFin: null,
       estado: 'PENDIENTE',
       creadoEn: new Date().toISOString(),
       iniciadoEn: null,
       completadoEn: null,
       canceladoEn: null,
-      bolsas: bolsas.map((b) => ({
-        id: nextIds.bolsa(),
-        codigo: codigoBolsa(),
-        tipoEnvase: b.tipoEnvase,
-        cantidad: b.cantidad,
-        capacidadMaxima: TIPOS_ENVASE.find((t) => t.codigo === b.tipoEnvase).capacidadMaximaBolsa,
-        resultado: null,
-        envasesValidos: null,
-        nota: null,
-      })),
+      bolsas: bolsas.map((bolsa) => {
+        const contenidos = Object.fromEntries(Object.entries(bolsa.contenidos).map(([codigo, raw]) => [codigo, Number(raw)]))
+        const cantidad = Object.values(contenidos).reduce((total, value) => total + value, 0)
+        const capacidadMaxima = Object.keys(contenidos).reduce((total, codigo) => total + TIPOS_ENVASE.find((item) => item.codigo === codigo).capacidadMaximaBolsa, 0)
+        const tipos = Object.keys(contenidos)
+        return {
+          id: nextIds.bolsa(),
+          codigo: codigoBolsa(),
+          tipoEnvase: tipos.length === 1 ? tipos[0] : 'MEZCLADO',
+          contenidos,
+          cantidad,
+          capacidadMaxima,
+          resultado: null,
+          envasesValidos: null,
+          nota: null,
+        }
+      }),
       liquidacion: null,
     }
     pedidos.push(p)
