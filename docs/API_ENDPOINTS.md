@@ -1,18 +1,18 @@
 # Contrato de API REST para Spring Boot
 
-> Documento **generado** con `npm run docs` a partir del JSDoc de `src/api/*Service.js`.
+> Documento **generado** con `npm run docs` a partir del JSDoc de `app/api/*Service.js`.
 > Cada fila es una llamada real que hace el front cuando `VITE_USE_MOCKS=false`.
-> La forma exacta de cada respuesta está en el JSDoc del servicio y en el mock equivalente de `src/mocks/`.
+> La forma exacta de cada respuesta está en el JSDoc del servicio y en el mock equivalente de `app/mocks/`.
 
 **Convenciones**
 
 - Prefijo `/api`, JSON en `camelCase`, fechas ISO-8601, importes como número decimal en euros.
 - Listados paginados con la forma de Spring Data `Page<T>`: `{ content, totalElements, totalPages, number, size }` y parámetros `page` (desde 0) y `size`.
 - Autenticación: cabecera `Authorization: Bearer <accessToken>` (ver `docs/SPRING_SECURITY.md`).
-- Errores: `{ status, code, message, fieldErrors }` (ver `src/api/ApiError.js`).
+- Errores: `{ status, code, message, fieldErrors }` (ver `app/api/ApiError.js`).
 - Los endpoints de un rol **nunca** reciben el id del usuario: el backend lo obtiene del token.
 
-Total: **69 endpoints**.
+Total: **70 endpoints**.
 
 ## `authService.js` — rol: Público (salvo `me`/`logout`: autenticado)
 
@@ -42,7 +42,7 @@ Total: **69 endpoints**.
 | `GET` | `/api/config/parametros` | HU-05.02 | `getParametros` | <br><sub>{ economia: { importePorEnvase, porcentajeCiudadano, porcentajeEmpresa, provisional }, pedidos: { maxBolsas }, impacto: { kgCo2PorEnvase: { PET, LATA, ... }, kgCo2PorKmCoche, kgCo2PorArbolAnio } }</sub> |
 | `GET` | `/api/catalogo/tipos-envase` | HU-02.01 | `getTiposEnvase` | <br><sub>[{ codigo: 'PET'\|'LATA'\|'BRIK'\|'VIDRIO'\|'MEZCLADO', nombre, icono, capacidadMaximaBolsa }]</sub> |
 | `GET` | `/api/catalogo/tipos-incidencia` | HU-06.01 | `getTiposIncidencia` | [{ codigo, nombre }] |
-| `GET` | `/api/catalogo/codigos-postales` | HU-07.06 | `getCodigosPostales` | CP del municipio de Málaga [{ cp, barrio, lat, lng }] |
+| `GET` | `/api/catalogo/codigos-postales` | HU-07.06 | `getCodigosPostales` | CP del municipio de Málaga [{ cp, barrio, lat, lng, conServicio }] |
 
 ## `ciudadanoService.js` — rol: CIUDADANO
 
@@ -51,7 +51,7 @@ Total: **69 endpoints**.
 | `GET` | `/api/ciudadano/pedidos?estado=&page=&size=` | HU-02.03, HU-03.03 | `getPedidos` | <br><sub>estado: PENDIENTE \| EN_CAMINO \| COMPLETADA \| CANCELADA \| ACTIVOS (pendientes + en camino) Page<{ id, codigo, estado, creadoEn, fecha, horaInicio, horaFin, numBolsas, totalEnvases, importeCiudadano, tieneIncidencias }></sub> |
 | `GET` | `/api/ciudadano/pedidos/{id}` | HU-02.02, HU-02.03, HU-06.04 | `getPedido` | <br><sub>resumen + { direccion, iniciadoEn, completadoEn, canceladoEn, cancelable, bolsas: [{ id, codigo, tipoEnvase, cantidad, capacidadMaxima, resultado, envasesValidos }], liquidacion: { envasesValidos, importeCiudadano } \| null, incidencias: [{ id, codigo, tipo, estado, creadaEn, resolucion }] }</sub> |
 | `GET` | `/api/ciudadano/disponibilidad` | HU-03.01 | `getDisponibilidad` | <br><sub>Franjas de los próximos 14 días para el CP del ciudadano. { codigoPostal, zona: { id, nombre } \| null, huecos: [{ fecha, franjaId, horaInicio, horaFin, plazasLibres, completa }] }</sub> |
-| `POST` | `/api/ciudadano/pedidos` | HU-02.01, HU-02.02, HU-03.02 | `crearPedido` | <br><sub>body: { bolsas: [{ tipoEnvase, cantidad }], fecha: 'YYYY-MM-DD', franjaId } 201 → detalle (genera el código del pedido y de cada bolsa) · 400 VALIDATION_ERROR (fieldErrors "bolsas[0].cantidad") 409 FRANJA_COMPLETA · 422 ZONA_SIN_SERVICIO</sub> |
+| `POST` | `/api/ciudadano/pedidos` | HU-02.01, HU-02.02, HU-03.02 | `crearPedido` | <br><sub>body: { bolsas: [{ contenidos: { PET: 2, BRIK: 1 } }] } Fecha, zona y franja quedan sin asignar hasta una futura programación de la recogida. 201 → detalle con código del pedido y de cada bolsa.</sub> |
 | `POST` | `/api/ciudadano/pedidos/{id}/cancelar` | HU-03.04 | `cancelarPedido` | solo PENDIENTE, si no 409 ESTADO_NO_CANCELABLE |
 | `GET` | `/api/ciudadano/impacto` | — | `getImpacto` | CO2 evitado por los envases del ciudadano<br><sub>{ co2EvitadoKg, envasesReciclados, recogidas, porTipo: [{ tipoEnvase, envases, co2Kg }], porMes: [{ mes: 'YYYY-MM', co2Kg }], zona: { nombre, co2EvitadoKg } \| null }</sub> |
 | `GET` | `/api/ciudadano/monedero` | HU-05.01 | `getMonedero` | { saldoDisponible } (solo la parte del ciudadano ya validada) |
@@ -108,6 +108,7 @@ Total: **69 endpoints**.
 | `GET` | `/api/admin/usuarios?q=&rol=&page=&size=` | HU-07.02 | `getUsuarios` | <br><sub>Page<{ id, nombre, email, roles: ['CIUDADANO'\|'RECOLECTOR'\|'ADMIN'], estado: ACTIVA\|SUSPENDIDA }></sub> |
 | `GET` | `/api/admin/usuarios/{id}` | HU-07.02 | `getUsuario` | añade { nombrePila, apellidos, dni, telefono, direccion, zona, altaEn, pedidos, zonaPreferida, zonasAsignadas, co2EvitadoKg } |
 | `PUT` | `/api/admin/usuarios/{id}` | HU-07.02 | `editarUsuario` | body: { nombre, apellidos, email, telefono, direccion? } (mantener actualizada la información) |
+| `PUT` | `/api/admin/usuarios/{id}/roles` | HU-01.03 | `actualizarRoles` | body: { roles: ['CIUDADANO'\|'RECOLECTOR'\|'ADMIN'] } · reemplaza todos los roles y protege al último ADMIN activo |
 | `POST` | `/api/admin/usuarios/{id}/suspender` | HU-07.02 | `suspenderUsuario` | la cuenta no podrá iniciar sesión (403 ACCOUNT_SUSPENDED) |
 | `POST` | `/api/admin/usuarios/{id}/reactivar` | HU-07.02 | `reactivarUsuario` |  |
 | `POST` | `/api/admin/recolectores` | HU-07.02 | `crearRecolector` | body: { nombre, apellidos, email, telefono, dni }<br><sub>201 → usuario + { passwordProvisional } (solo en esta respuesta). Al entrar deberá crear su contraseña y elegir zona</sub> |

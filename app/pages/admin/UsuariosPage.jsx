@@ -13,6 +13,7 @@
  *  [A2] Reactivar cuenta ................................ POST /api/admin/usuarios/{id}/reactivar
  *  [A3] Dar de alta un recolector ....................... POST /api/admin/recolectores (devuelve su contraseña provisional)
  *  [A4] Generar contraseña provisional .................. POST /api/admin/usuarios/{id}/password-provisional
+ *  [A5] Modificar roles .................................. PUT /api/admin/usuarios/{id}/roles
  */
 import { useEffect, useState } from 'react'
 import { useApi, useAction } from '../../hooks/useApi'
@@ -143,6 +144,7 @@ function FichaUsuario({ id, onClose, onChanged }) {
   const usuario = useApi(() => adminService.getUsuario(id), [id])
   const [confirmar, setConfirmar] = useState(false)
   const [editando, setEditando] = useState(false)
+  const [editandoRoles, setEditandoRoles] = useState(false)
   const [credenciales, setCredenciales] = useState(null)
   const [restablecer, restablecerState] = useAction(adminService.restablecerPassword)
   const [cambiar, state] = useAction((u) => (u.estado === 'ACTIVA' ? adminService.suspenderUsuario(u.id) : adminService.reactivarUsuario(u.id)))
@@ -178,6 +180,17 @@ function FichaUsuario({ id, onClose, onChanged }) {
                   onChanged()
                 }}
               />
+            ) : editandoRoles ? (
+              <EditarRoles
+                u={u}
+                onCancel={() => setEditandoRoles(false)}
+                onSaved={(nuevo) => {
+                  usuario.setData(nuevo)
+                  setEditandoRoles(false)
+                  toast('Roles actualizados')
+                  onChanged()
+                }}
+              />
             ) : (
             <div className="flex flex-col gap-4">
               <div className="flex items-start justify-between gap-3">
@@ -203,6 +216,9 @@ function FichaUsuario({ id, onClose, onChanged }) {
               <div className="flex flex-wrap gap-2">
                 <button type="button" className="btn btn-secondary flex-1" onClick={() => setEditando(true)}>
                   <Icon name="edit" className="text-[18px]" /> Editar datos{u.direccion ? ' y dirección' : ''}
+                </button>
+                <button type="button" className="btn btn-secondary flex-1" onClick={() => setEditandoRoles(true)}>
+                  <Icon name="admin_panel_settings" className="text-[18px]" /> Modificar roles
                 </button>
                 {/* ⚡ ACCIÓN A4 — POST /api/admin/usuarios/{id}/password-provisional */}
                 <button
@@ -297,6 +313,52 @@ function EditarUsuario({ u, onCancel, onSaved }) {
         </button>
         <button type="submit" className="btn btn-primary flex-1" disabled={state.loading}>
           {state.loading && <Spinner />} Guardar
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function EditarRoles({ u, onCancel, onSaved }) {
+  const [roles, setRoles] = useState(u.roles)
+  const [guardar, state] = useAction(adminService.actualizarRoles)
+  const alternar = (role) => setRoles((actuales) =>
+    actuales.includes(role) ? actuales.filter((r) => r !== role) : [...actuales, role],
+  )
+
+  const submit = async (e) => {
+    e.preventDefault()
+    try {
+      onSaved(await guardar(u.id, roles))
+    } catch {
+      /* error debajo */
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-4">
+      <fieldset className="flex flex-col gap-3">
+        <legend className="label mb-2">Roles de la cuenta</legend>
+        {Object.entries(ROLE_META).map(([role, meta]) => (
+          <label key={role} className="flex items-center gap-3 rounded-xl bg-surface-container-low p-3">
+            <input type="checkbox" checked={roles.includes(role)} onChange={() => alternar(role)} />
+            <span className="flex-1">
+              <span className="block font-semibold">{meta.label}</span>
+              <span className="block text-sm text-on-surface-variant">{meta.descripcion}</span>
+            </span>
+          </label>
+        ))}
+      </fieldset>
+      <p className="text-sm text-on-surface-variant">
+        Los permisos del servidor cambian al guardar. Si esta cuenta tiene una sesión abierta, puede necesitar recargarla para actualizar sus menús.
+      </p>
+      {state.error && <Alert>{state.error.message}</Alert>}
+      <div className="flex gap-2">
+        <button type="button" className="btn btn-secondary flex-1" onClick={onCancel}>
+          Cancelar
+        </button>
+        <button type="submit" className="btn btn-primary flex-1" disabled={state.loading || roles.length === 0}>
+          {state.loading && <Spinner />} Guardar roles
         </button>
       </div>
     </form>
