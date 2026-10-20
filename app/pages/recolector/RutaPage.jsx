@@ -98,7 +98,14 @@ export default function RutaPage() {
                 </span>
               ),
             })),
-            ...r.hechas.map((p) => ({ id: `h${p.id}`, lat: p.lat, lng: p.lng, etiqueta: '✓', color: 'gris', popup: `${p.codigo} · completada` })),
+            ...(Array.isArray(r.hechas) ? r.hechas : []).map((p) => ({
+              id: `h${p.id}`,
+              lat: p.lat,
+              lng: p.lng,
+              etiqueta: '✓',
+              color: 'gris',
+              popup: `${p.codigo} · completada`,
+            })),
           ]
           return (
             // ⚡ ZONA DINÁMICA Z1 / Z2 — GET /api/recolector/ruta
