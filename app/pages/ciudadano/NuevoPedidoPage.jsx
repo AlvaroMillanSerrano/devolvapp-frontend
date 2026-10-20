@@ -1,16 +1,16 @@
 /**
- * MVP ciudadano: crea pedidos con bolsas mixtas y los deja pendientes de programación.
+ * Crea pedidos con bolsas mixtas y permite reservar una franja de recogida disponible.
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
-import { useAction } from '../../hooks/useApi'
+import { useAction, useApi } from '../../hooks/useApi'
 import { useParametros, useTiposEnvase } from '../../hooks/useParametros'
 import { ciudadanoService } from '../../api/ciudadanoService'
 import Async, { Skeleton } from '../../components/ui/Async'
 import { Alert, Spinner } from '../../components/ui/FormField'
 import Icon from '../../components/ui/Icon'
-import { formatCo2, formatDireccion, formatEUR } from '../../utils/format'
+import { formatCo2, formatDireccion, formatEUR, formatFranja, formatRelativeDay } from '../../utils/format'
 
 let bolsaKey = 0
 const nuevaBolsa = () => ({ key: ++bolsaKey, contenidos: {} })
@@ -44,7 +44,9 @@ export default function NuevoPedidoPage() {
   const navigate = useNavigate()
   const tipos = useTiposEnvase()
   const parametros = useParametros()
+  const disponibilidad = useApi(() => ciudadanoService.getDisponibilidad(), [])
   const [bolsas, setBolsas] = useState(() => [nuevaBolsa()])
+  const [franjaSeleccionada, setFranjaSeleccionada] = useState(null)
   const [errores, setErrores] = useState({})
   const [creado, setCreado] = useState(null)
   const [crear, crearState] = useAction(ciudadanoService.crearPedido)
@@ -58,6 +60,16 @@ export default function NuevoPedidoPage() {
   const co2Estimado = factores
     ? bolsas.reduce((total, bolsa) => total + Object.entries(bolsa.contenidos).reduce((suma, [codigo, value]) => suma + (Number(value) > 0 ? Number(value) * (factores[codigo] ?? 0) : 0), 0), 0)
     : null
+  const huecos = disponibilidad.data?.huecos ?? []
+  const fechasDisponibles = useMemo(
+    () => [...new Set(huecos.map((hueco) => hueco.fecha))],
+    [huecos],
+  )
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(null)
+  const fechaActiva = fechaSeleccionada && fechasDisponibles.includes(fechaSeleccionada)
+    ? fechaSeleccionada
+    : fechasDisponibles[0] ?? null
+  const franjasDelDia = huecos.filter((hueco) => hueco.fecha === fechaActiva)
 
   const setContenido = (key, codigo, value) => {
     setBolsas((current) => current.map((bolsa) => {
@@ -76,6 +88,10 @@ export default function NuevoPedidoPage() {
     if (Object.values(nextErrors).some(Boolean)) return
     try {
       const pedido = await crear({
+        ...(franjaSeleccionada && {
+          fecha: franjaSeleccionada.fecha,
+          franjaId: franjaSeleccionada.franjaId,
+        }),
         bolsas: bolsas.map((bolsa) => ({
           contenidos: Object.fromEntries(Object.entries(bolsa.contenidos).map(([codigo, cantidad]) => [codigo, Number(cantidad)])),
         })),
@@ -108,6 +124,78 @@ export default function NuevoPedidoPage() {
           <p className="text-sm font-medium truncate">{formatDireccion(user?.direccion)}</p>
         </div>
       </div>
+
+      <Async state={disponibilidad} fallback={<Skeleton className="h-40" />}>
+        {(datos) => {
+          const sinZona = !datos.zona
+          const sinHuecos = !sinZona && !huecos.length
+          return (
+            <section data-dyn="GET /ciudadano/disponibilidad" className="card flex flex-col gap-3">
+              <div className="flex items-start gap-3">
+                <span className="w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <Icon name="calendar_month" className="text-[22px]" />
+                </span>
+                <div>
+                  <h2 className="font-bold">Fecha y horario de recogida</h2>
+                  {datos.zona ? (
+                    <p className="text-sm text-on-surface-variant">Zona {datos.zona.nombre} · elige una franja disponible.</p>
+                  ) : (
+                    <p className="text-sm text-on-surface-variant">Añade un código postal cubierto a tu perfil para elegir horario.</p>
+                  )}
+                </div>
+              </div>
+
+              {sinZona ? (
+                <Link to="/ciudadano/perfil" className="btn btn-secondary self-start">
+                  <Icon name="edit_location" className="text-[18px]" />Completar mi dirección
+                </Link>
+              ) : sinHuecos ? (
+                <p className="rounded-xl bg-surface-container-low p-3 text-sm text-on-surface-variant">
+                  No hay franjas disponibles durante los próximos 14 días.
+                </p>
+              ) : (
+                <>
+                  <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1">
+                    {fechasDisponibles.map((fecha) => (
+                      <button
+                        key={fecha}
+                        type="button"
+                        className={`chip shrink-0 ${fecha === fechaActiva ? 'chip-active' : ''}`}
+                        onClick={() => {
+                          setFechaSeleccionada(fecha)
+                          setFranjaSeleccionada(null)
+                        }}
+                      >
+                        {formatRelativeDay(fecha)}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {franjasDelDia.map((franja) => {
+                      const seleccionada = franjaSeleccionada?.franjaId === franja.franjaId && franjaSeleccionada?.fecha === franja.fecha
+                      return (
+                        <button
+                          key={franja.franjaId}
+                          type="button"
+                          aria-pressed={seleccionada}
+                          onClick={() => setFranjaSeleccionada(franja)}
+                          className={`rounded-xl border p-3 text-left transition-colors ${seleccionada ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-surface-container hover:bg-surface-container-low'}`}
+                        >
+                          <span className="block font-semibold">{formatFranja(franja.horaInicio, franja.horaFin)}</span>
+                          <span className="block text-xs text-on-surface-variant mt-0.5">{franja.plazasLibres} {franja.plazasLibres === 1 ? 'plaza disponible' : 'plazas disponibles'}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+              {!franjaSeleccionada && (
+                <p className="text-xs text-on-surface-variant">Si no eliges una franja, guardaremos la solicitud pendiente de programación.</p>
+              )}
+            </section>
+          )
+        }}
+      </Async>
 
       <Async state={tipos} fallback={<Skeleton className="h-48" />}>
         {(lista) => (
@@ -160,7 +248,9 @@ export default function NuevoPedidoPage() {
       {crearState.error && <Alert>{crearState.error.message}</Alert>}
 
       <div className="card bg-primary/5 text-sm text-on-surface-variant">
-        Guardaremos la solicitud ahora. La fecha de recogida se confirmará cuando el servicio esté programado.
+        {franjaSeleccionada
+          ? `Recogeremos tus bolsas el ${formatRelativeDay(franjaSeleccionada.fecha).toLowerCase()}, entre ${formatFranja(franjaSeleccionada.horaInicio, franjaSeleccionada.horaFin)}.`
+          : 'Si no eliges franja, la solicitud quedará pendiente de programación.'}
       </div>
 
       <BarraInferior>
@@ -187,7 +277,11 @@ function PedidoCreado({ pedido, tipos }) {
       <span className="w-20 h-20 rounded-full bg-secondary-container flex items-center justify-center"><Icon name="check" className="text-[44px] text-on-secondary-container" /></span>
       <div>
         <h1 className="text-2xl font-bold">¡Solicitud guardada!</h1>
-        <p className="text-on-surface-variant mt-1">Te avisaremos cuando la recogida tenga fecha y horario.</p>
+        <p className="text-on-surface-variant mt-1">
+          {pedido.fecha && pedido.horaInicio && pedido.horaFin
+            ? `Recogeremos tus bolsas el ${formatRelativeDay(pedido.fecha).toLowerCase()}, entre ${formatFranja(pedido.horaInicio, pedido.horaFin)}.`
+            : 'Te avisaremos cuando la recogida tenga fecha y horario.'}
+        </p>
       </div>
       <div className="card w-full text-left flex flex-col gap-3">
         <p className="font-bold">Identifica tus bolsas con estos códigos</p>
