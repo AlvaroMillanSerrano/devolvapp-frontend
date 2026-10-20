@@ -129,8 +129,8 @@ export default function ZonasPage() {
         <FranjaModal
           {...franja}
           onClose={() => setFranja(null)}
-          onDone={(z) => {
-            actualizarZona(z)
+          onDone={() => {
+            recargar()
             setFranja(null)
           }}
         />

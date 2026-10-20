@@ -33,8 +33,8 @@ export const ciudadanoService = {
 
   /**
    * HU-02.01 / HU-02.02 / HU-03.02 · POST /api/ciudadano/pedidos
-   * body: { bolsas: [{ contenidos: { PET: 2, BRIK: 1 } }] }
-   * Fecha, zona y franja quedan sin asignar hasta una futura programación de la recogida.
+   * body: { fecha?, franjaId?, bolsas: [{ contenidos: { PET: 2, BRIK: 1 } }] }
+   * Si incluye fecha y franja, el servidor asigna la zona, horario y recolector configurado.
    * 201 → detalle con código del pedido y de cada bolsa.
    */
   crearPedido: mockable((data) => api.post('/ciudadano/pedidos', data).then(unwrap), (data) => m.crearPedido(data), { delay: 700 }),
