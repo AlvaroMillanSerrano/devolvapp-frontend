@@ -153,6 +153,12 @@ export const adminService = {
   /** HU-07.02 · PUT /api/admin/usuarios/{id} · body: { nombre, apellidos, email, telefono, direccion? } (mantener actualizada la información) */
   editarUsuario: mockable((id, data) => api.put(`/admin/usuarios/${id}`, data).then(unwrap), (id, data) => m.editarUsuario(id, data)),
 
+  /** HU-01.03 · PUT /api/admin/usuarios/{id}/roles · body: { roles: ['CIUDADANO'|'RECOLECTOR'|'ADMIN'] } · reemplaza todos los roles y protege al último ADMIN activo */
+  actualizarRoles: mockable(
+    (id, roles) => api.put(`/admin/usuarios/${id}/roles`, { roles }).then(unwrap),
+    (id, roles) => m.actualizarRoles(id, roles),
+  ),
+
   /** HU-07.02 · POST /api/admin/usuarios/{id}/suspender · la cuenta no podrá iniciar sesión (403 ACCOUNT_SUSPENDED) */
   suspenderUsuario: mockable(
     (id) => api.post(`/admin/usuarios/${id}/suspender`).then(unwrap),

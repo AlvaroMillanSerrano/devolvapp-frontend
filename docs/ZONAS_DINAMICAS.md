@@ -16,7 +16,7 @@
 
 ### Layout común a los tres roles
 
-- **Fichero:** [`src/layouts/AppLayout.jsx`](../src/layouts/AppLayout.jsx)
+- **Fichero:** [`app/layouts/AppLayout.jsx`](../app/layouts/AppLayout.jsx)
 
 | Zona | Qué muestra | Origen de los datos |
 |---|---|---|
@@ -31,7 +31,7 @@
 
 ### Inicio de sesión MULTIROL
 
-- **Fichero:** [`src/pages/auth/LoginPage.jsx`](../src/pages/auth/LoginPage.jsx)
+- **Fichero:** [`app/pages/auth/LoginPage.jsx`](../app/pages/auth/LoginPage.jsx)
 - **Ruta / rol:** /login · Acceso: público (solo sin sesión)
 - **Historias de usuario:** HU-01.02 (inicio de sesión), HU-01.03 (roles), HU-07.02 (cuentas suspendidas)
 
@@ -43,7 +43,7 @@
 
 ### Recuperar contraseña — solicitud de enlace
 
-- **Fichero:** [`src/pages/auth/RecuperarPasswordPage.jsx`](../src/pages/auth/RecuperarPasswordPage.jsx)
+- **Fichero:** [`app/pages/auth/RecuperarPasswordPage.jsx`](../app/pages/auth/RecuperarPasswordPage.jsx)
 - **Ruta / rol:** /recuperar-password · Acceso: público
 - **Historias de usuario:** HU-01.04
 
@@ -53,7 +53,7 @@
 
 ### Registro de ciudadano
 
-- **Fichero:** [`src/pages/auth/RegistroPage.jsx`](../src/pages/auth/RegistroPage.jsx)
+- **Fichero:** [`app/pages/auth/RegistroPage.jsx`](../app/pages/auth/RegistroPage.jsx)
 - **Ruta / rol:** /registro · Acceso: público
 - **Historias de usuario:** HU-01.01
 
@@ -65,7 +65,7 @@
 
 ### Restablecer contraseña desde el enlace del correo
 
-- **Fichero:** [`src/pages/auth/RestablecerPasswordPage.jsx`](../src/pages/auth/RestablecerPasswordPage.jsx)
+- **Fichero:** [`app/pages/auth/RestablecerPasswordPage.jsx`](../app/pages/auth/RestablecerPasswordPage.jsx)
 - **Ruta / rol:** /restablecer-password?token=XXXX · Acceso: público
 - **Historias de usuario:** HU-01.04
 
@@ -81,7 +81,7 @@
 
 ### Selección de perfil para usuarios MULTIROL
 
-- **Fichero:** [`src/pages/auth/SeleccionPerfilPage.jsx`](../src/pages/auth/SeleccionPerfilPage.jsx)
+- **Fichero:** [`app/pages/auth/SeleccionPerfilPage.jsx`](../app/pages/auth/SeleccionPerfilPage.jsx)
 - **Ruta / rol:** /seleccionar-perfil · Acceso: autenticado con 2+ roles
 - **Historias de usuario:** HU-01.02 / HU-01.03
 
@@ -93,7 +93,7 @@
 
 ### Ajustes de mi cuenta (datos personales, dirección y contraseña)
 
-- **Fichero:** [`src/pages/comun/PerfilPage.jsx`](../src/pages/comun/PerfilPage.jsx)
+- **Fichero:** [`app/pages/comun/PerfilPage.jsx`](../app/pages/comun/PerfilPage.jsx)
 - **Ruta / rol:** /ciudadano/perfil · /recolector/perfil · /admin/perfil · Rol: cualquiera
 - **Historias de usuario:** HU-01.01 (datos y dirección completa del ciudadano), HU-07.02 (información de usuario actualizada)
 
@@ -110,7 +110,7 @@
 
 ### Inicio del ciudadano
 
-- **Fichero:** [`src/pages/ciudadano/InicioPage.jsx`](../src/pages/ciudadano/InicioPage.jsx)
+- **Fichero:** [`app/pages/ciudadano/InicioPage.jsx`](../app/pages/ciudadano/InicioPage.jsx)
 - **Ruta / rol:** /ciudadano · Rol: CIUDADANO
 - **Historias de usuario:** HU-05.01 (saldo), HU-03.03 (estado de las recogidas en curso)
 
@@ -123,7 +123,7 @@
 
 ### Monedero
 
-- **Fichero:** [`src/pages/ciudadano/MonederoPage.jsx`](../src/pages/ciudadano/MonederoPage.jsx)
+- **Fichero:** [`app/pages/ciudadano/MonederoPage.jsx`](../app/pages/ciudadano/MonederoPage.jsx)
 - **Ruta / rol:** /ciudadano/monedero · Rol: CIUDADANO
 - **Historias de usuario:** HU-05.01 (saldo), HU-05.03 (retirar a mi cuenta), HU-05.05 (movimientos)
 
@@ -137,26 +137,9 @@
 |---|---|---|
 | **A1** | Retirar dinero | `POST /api/ciudadano/monedero/retiradas` |
 
-### Nuevo pedido (bolsas → día y hora → confirmar)
-
-- **Fichero:** [`src/pages/ciudadano/NuevoPedidoPage.jsx`](../src/pages/ciudadano/NuevoPedidoPage.jsx)
-- **Ruta / rol:** /ciudadano/nuevo · Rol: CIUDADANO
-- **Historias de usuario:** HU-02.01 (contenido de cada bolsa), HU-02.02 (código único por bolsa), HU-03.01 (calendario de la zona), HU-03.02 (solicitud de recogida)
-
-| Zona | Qué muestra | Origen de los datos |
-|---|---|---|
-| **Z1** | Tipos de envase y capacidad máxima | `GET /api/catalogo/tipos-envase` |
-| **Z2** | Máximo de bolsas, ganancia y CO2 estimados | `GET /api/config/parametros` |
-| **Z3** | Días y franjas de mi zona | `GET /api/ciudadano/disponibilidad` |
-| **Z4** | Pedido creado con códigos de bolsa | `respuesta de [A1]` |
-
-| Acción | Qué hace | Endpoint |
-|---|---|---|
-| **A1** | Confirmar pedido | `POST /api/ciudadano/pedidos` |
-
 ### Detalle de un pedido
 
-- **Fichero:** [`src/pages/ciudadano/PedidoDetallePage.jsx`](../src/pages/ciudadano/PedidoDetallePage.jsx)
+- **Fichero:** [`app/pages/ciudadano/PedidoDetallePage.jsx`](../app/pages/ciudadano/PedidoDetallePage.jsx)
 - **Ruta / rol:** /ciudadano/pedidos/:id · Rol: CIUDADANO
 - **Historias de usuario:** HU-02.02 (código de cada bolsa), HU-02.03 (composición), HU-03.03 (estado), HU-03.04 (cancelar), HU-05.02 (importe abonado), HU-06.04 (incidencias del pedido)
 
@@ -174,7 +157,7 @@
 
 ### Mis pedidos
 
-- **Fichero:** [`src/pages/ciudadano/PedidosPage.jsx`](../src/pages/ciudadano/PedidosPage.jsx)
+- **Fichero:** [`app/pages/ciudadano/PedidosPage.jsx`](../app/pages/ciudadano/PedidosPage.jsx)
 - **Ruta / rol:** /ciudadano/pedidos · Rol: CIUDADANO
 - **Historias de usuario:** HU-02.03 (listado de pedidos), HU-03.03 (estado de cada recogida)
 
@@ -186,7 +169,7 @@
 
 ### Bienvenida del recolector (primer inicio de sesión)
 
-- **Fichero:** [`src/pages/recolector/BienvenidaPage.jsx`](../src/pages/recolector/BienvenidaPage.jsx)
+- **Fichero:** [`app/pages/recolector/BienvenidaPage.jsx`](../app/pages/recolector/BienvenidaPage.jsx)
 - **Ruta / rol:** /recolector/bienvenida · Rol: RECOLECTOR (si aún no tiene zona preferida o tiene contraseña provisional)
 - **Historias de usuario:** HU-07.06 (asignación por zona)
 
@@ -204,7 +187,7 @@
 
 ### Historial de recogidas completadas
 
-- **Fichero:** [`src/pages/recolector/HistorialPage.jsx`](../src/pages/recolector/HistorialPage.jsx)
+- **Fichero:** [`app/pages/recolector/HistorialPage.jsx`](../app/pages/recolector/HistorialPage.jsx)
 - **Ruta / rol:** /recolector/historial · Rol: RECOLECTOR
 - **Historias de usuario:** HU-04.03 (recogidas finalizadas), HU-04.04 (resultado de las bolsas)
 
@@ -215,7 +198,7 @@
 
 ### Recogida (empezar → verificar bolsas → completar)
 
-- **Fichero:** [`src/pages/recolector/RecogidaPage.jsx`](../src/pages/recolector/RecogidaPage.jsx)
+- **Fichero:** [`app/pages/recolector/RecogidaPage.jsx`](../app/pages/recolector/RecogidaPage.jsx)
 - **Ruta / rol:** /recolector/recogidas/:id · Rol: RECOLECTOR
 - **Historias de usuario:** HU-04.01 (solo recogidas asignadas), HU-04.02 (iniciar), HU-04.03 (verificar y finalizar), HU-04.04 (resultado por bolsa), HU-06.01 (registrar incidencia)
 
@@ -235,7 +218,7 @@
 
 ### Mis recogidas
 
-- **Fichero:** [`src/pages/recolector/RecogidasPage.jsx`](../src/pages/recolector/RecogidasPage.jsx)
+- **Fichero:** [`app/pages/recolector/RecogidasPage.jsx`](../app/pages/recolector/RecogidasPage.jsx)
 - **Ruta / rol:** /recolector · Rol: RECOLECTOR
 - **Historias de usuario:** HU-04.01 (recogidas asignadas con fecha, franja, dirección e identificador; las canceladas, marcadas)
 
@@ -247,7 +230,7 @@
 
 ### Mapa y ruta del día
 
-- **Fichero:** [`src/pages/recolector/RutaPage.jsx`](../src/pages/recolector/RutaPage.jsx)
+- **Fichero:** [`app/pages/recolector/RutaPage.jsx`](../app/pages/recolector/RutaPage.jsx)
 - **Ruta / rol:** /recolector/ruta · Rol: RECOLECTOR
 - **Historias de usuario:** HU-04.01 (recogidas asignadas con fecha, franja y dirección)
 
@@ -260,7 +243,7 @@
 
 ### Bloque «Mi zona» del perfil del recolector
 
-- **Fichero:** [`src/pages/recolector/ZonaPreferencias.jsx`](../src/pages/recolector/ZonaPreferencias.jsx)
+- **Fichero:** [`app/pages/recolector/ZonaPreferencias.jsx`](../app/pages/recolector/ZonaPreferencias.jsx)
 - **Ruta / rol:** /recolector/perfil · Rol: RECOLECTOR
 - **Historias de usuario:** HU-07.06 (zona preferida y solicitud de cambio)
 
@@ -277,7 +260,7 @@
 
 ### Incidencias
 
-- **Fichero:** [`src/pages/admin/IncidenciasPage.jsx`](../src/pages/admin/IncidenciasPage.jsx)
+- **Fichero:** [`app/pages/admin/IncidenciasPage.jsx`](../app/pages/admin/IncidenciasPage.jsx)
 - **Ruta / rol:** /admin/incidencias · Rol: ADMIN
 - **Historias de usuario:** HU-06.02 (consultar y filtrar), HU-06.03 (resolver con trazabilidad), HU-04.04 (resultados por bolsa de la recogida), HU-03.03 (cancelación autorizada de la recogida)
 
@@ -294,7 +277,7 @@
 
 ### Pagos a ciudadanos (aceptar o rechazar transferencias)
 
-- **Fichero:** [`src/pages/admin/PagosPage.jsx`](../src/pages/admin/PagosPage.jsx)
+- **Fichero:** [`app/pages/admin/PagosPage.jsx`](../app/pages/admin/PagosPage.jsx)
 - **Ruta / rol:** /admin/pagos · Rol: ADMIN
 - **Historias de usuario:** HU-07.03 (estado de las transferencias), HU-05.04 (registrar el resultado sin pagos duplicados)
 
@@ -311,7 +294,7 @@
 
 ### Pendientes (bandeja de administración)
 
-- **Fichero:** [`src/pages/admin/PendientesPage.jsx`](../src/pages/admin/PendientesPage.jsx)
+- **Fichero:** [`app/pages/admin/PendientesPage.jsx`](../app/pages/admin/PendientesPage.jsx)
 - **Ruta / rol:** /admin/pendientes · Rol: ADMIN
 - **Historias de usuario:** HU-05.04 / HU-07.03 (transferencias por aceptar), HU-06.03 (incidencias), HU-07.06 (zonas sin recolector y cambios de zona)
 
@@ -323,7 +306,7 @@
 
 ### Recogidas (todas)
 
-- **Fichero:** [`src/pages/admin/RecogidasPage.jsx`](../src/pages/admin/RecogidasPage.jsx)
+- **Fichero:** [`app/pages/admin/RecogidasPage.jsx`](../app/pages/admin/RecogidasPage.jsx)
 - **Ruta / rol:** /admin/recogidas · Rol: ADMIN
 - **Historias de usuario:** HU-04.04 (resultados por bolsa e incidencias de cada recogida), HU-03.03 (cancelación autorizada), HU-07.06 (recolector responsable)
 
@@ -340,7 +323,7 @@
 
 ### Resumen (indicadores y reparto económico)
 
-- **Fichero:** [`src/pages/admin/ResumenPage.jsx`](../src/pages/admin/ResumenPage.jsx)
+- **Fichero:** [`app/pages/admin/ResumenPage.jsx`](../app/pages/admin/ResumenPage.jsx)
 - **Ruta / rol:** /admin · Rol: ADMIN
 - **Historias de usuario:** HU-07.04 (indicadores de recogidas e incidencias por periodo), HU-07.05 (reparto económico por periodo)
 
@@ -353,7 +336,7 @@
 
 ### Bloque «Solicitudes de cambio de zona» (en Pendientes y en Zonas)
 
-- **Fichero:** [`src/pages/admin/SolicitudesZona.jsx`](../src/pages/admin/SolicitudesZona.jsx)
+- **Fichero:** [`app/pages/admin/SolicitudesZona.jsx`](../app/pages/admin/SolicitudesZona.jsx)
 - **Ruta / rol:** /admin/pendientes · /admin/zonas · Rol: ADMIN
 - **Historias de usuario:** HU-07.06 (asignación de recolectores por zona)
 
@@ -367,7 +350,7 @@
 
 ### Usuarios
 
-- **Fichero:** [`src/pages/admin/UsuariosPage.jsx`](../src/pages/admin/UsuariosPage.jsx)
+- **Fichero:** [`app/pages/admin/UsuariosPage.jsx`](../app/pages/admin/UsuariosPage.jsx)
 - **Ruta / rol:** /admin/usuarios · Rol: ADMIN
 - **Historias de usuario:** HU-07.02 (consultar cuentas por rol, ver su estado, suspender), HU-01.03 (roles)
 
@@ -383,10 +366,11 @@
 | **A2** | Reactivar cuenta | `POST /api/admin/usuarios/{id}/reactivar` |
 | **A3** | Dar de alta un recolector | `POST /api/admin/recolectores (devuelve su contraseña provisional)` |
 | **A4** | Generar contraseña provisional | `POST /api/admin/usuarios/{id}/password-provisional` |
+| **A5** | Modificar roles | `PUT /api/admin/usuarios/{id}/roles` |
 
 ### Zonas de reparto (códigos postales, recolector por día y horarios)
 
-- **Fichero:** [`src/pages/admin/ZonasPage.jsx`](../src/pages/admin/ZonasPage.jsx)
+- **Fichero:** [`app/pages/admin/ZonasPage.jsx`](../app/pages/admin/ZonasPage.jsx)
 - **Ruta / rol:** /admin/zonas · Rol: ADMIN
 - **Historias de usuario:** HU-07.06 (zona por CP y recolector asignado, aquí por día de la semana), HU-07.01 (días, horarios y capacidad)
 

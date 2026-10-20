@@ -435,6 +435,27 @@ export const adminMock = {
     return adminMock.usuario(id)
   },
 
+  actualizarRoles(id, roles) {
+    const u = buscar(usuarios, id, 'Usuario no encontrado.')
+    const permitidos = ['CIUDADANO', 'RECOLECTOR', 'ADMIN']
+    if (!Array.isArray(roles) || roles.length === 0)
+      throw mockError(400, 'VALIDATION_ERROR', 'Asigna al menos un rol.', { roles: 'Asigna al menos un rol' })
+    if (roles.some((role) => !permitidos.includes(role)) || new Set(roles).size !== roles.length)
+      throw mockError(400, 'VALIDATION_ERROR', 'La lista de roles no es válida.', { roles: 'Selecciona roles válidos sin repetir' })
+
+    const quitaAdmin = u.roles.includes('ADMIN') && !roles.includes('ADMIN')
+    if (quitaAdmin && u.estado === 'ACTIVA') {
+      const adminsActivos = usuarios.filter((usuario) => usuario.estado === 'ACTIVA' && usuario.roles.includes('ADMIN')).length
+      if (adminsActivos <= 1)
+        throw mockError(409, 'ULTIMO_ADMIN', 'No se puede quitar el rol al último administrador activo.')
+    }
+    if (quitaAdmin && u.id === loadSession()?.usuario?.id)
+      throw mockError(409, 'NO_PERMITIDO', 'No puedes quitarte tu propio rol de administrador.')
+
+    u.roles = [...roles]
+    return adminMock.usuario(id)
+  },
+
   cambiarEstadoUsuario(id, estado) {
     const u = buscar(usuarios, id, 'Usuario no encontrado.')
     if (u.id === loadSession()?.usuario?.id) throw mockError(409, 'NO_PERMITIDO', 'No puedes suspender tu propia cuenta.')

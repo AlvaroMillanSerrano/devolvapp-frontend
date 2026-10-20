@@ -1,8 +1,8 @@
 /**
  * Genera la documentación de integración con el backend a partir del propio código:
  *
- *   docs/ZONAS_DINAMICAS.md  ← cabecera de cada vista (src/pages/**, src/layouts/*)
- *   docs/API_ENDPOINTS.md    ← JSDoc de cada función de src/api/*Service.js
+ *   docs/ZONAS_DINAMICAS.md  ← cabecera de cada vista (app/pages/**, app/layouts/*)
+ *   docs/API_ENDPOINTS.md    ← JSDoc de cada función de app/api/*Service.js
  *
  * Uso:  npm run docs
  * Mantén las cabeceras "ZONAS DINÁMICAS" / "ACCIONES" de las vistas al día y vuelve a ejecutarlo.
@@ -12,7 +12,7 @@ import { join, relative, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const src = join(root, 'src')
+const src = join(root, 'app')
 const rel = (p) => relative(root, p).replace(/\\/g, '/')
 
 const walk = (dir) =>
@@ -164,16 +164,16 @@ for (const file of walk(join(src, 'api')).filter((f) => f.endsWith('Service.js')
 
 let api = `# Contrato de API REST para Spring Boot
 
-> Documento **generado** con \`npm run docs\` a partir del JSDoc de \`src/api/*Service.js\`.
+> Documento **generado** con \`npm run docs\` a partir del JSDoc de \`app/api/*Service.js\`.
 > Cada fila es una llamada real que hace el front cuando \`VITE_USE_MOCKS=false\`.
-> La forma exacta de cada respuesta está en el JSDoc del servicio y en el mock equivalente de \`src/mocks/\`.
+> La forma exacta de cada respuesta está en el JSDoc del servicio y en el mock equivalente de \`app/mocks/\`.
 
 **Convenciones**
 
 - Prefijo \`/api\`, JSON en \`camelCase\`, fechas ISO-8601, importes como número decimal en euros.
 - Listados paginados con la forma de Spring Data \`Page<T>\`: \`{ content, totalElements, totalPages, number, size }\` y parámetros \`page\` (desde 0) y \`size\`.
 - Autenticación: cabecera \`Authorization: Bearer <accessToken>\` (ver \`docs/SPRING_SECURITY.md\`).
-- Errores: \`{ status, code, message, fieldErrors }\` (ver \`src/api/ApiError.js\`).
+- Errores: \`{ status, code, message, fieldErrors }\` (ver \`app/api/ApiError.js\`).
 - Los endpoints de un rol **nunca** reciben el id del usuario: el backend lo obtiene del token.
 
 Total: **${endpoints.length} endpoints**.
