@@ -177,6 +177,8 @@ function DetalleRecogida({ id, onClose, onChanged }) {
         <Async state={r} fallback={<Skeleton className="h-96" />}>
           {(x) => {
             const abierta = x.estado === 'PENDIENTE' || x.estado === 'EN_CAMINO'
+            const zona = typeof x.zona === 'string' ? x.zona : x.zona?.nombre ?? 'sin asignar'
+            const ciudadano = typeof x.ciudadano === 'string' ? x.ciudadano : x.ciudadano?.nombre ?? '—'
             return (
               <div className="flex flex-col gap-4 text-sm">
                 <div className="flex items-start justify-between gap-3">
@@ -186,7 +188,7 @@ function DetalleRecogida({ id, onClose, onChanged }) {
                     </p>
                     <p>{formatDireccion(x.direccion)}</p>
                     <p className="text-on-surface-variant">
-                      Zona {x.zona} · ciudadano {x.ciudadano}
+                      Zona {zona} · ciudadano {ciudadano}
                     </p>
                   </div>
                   <Estado estado={x.estado} />
