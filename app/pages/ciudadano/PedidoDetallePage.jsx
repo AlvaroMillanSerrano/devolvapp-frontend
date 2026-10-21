@@ -69,7 +69,7 @@ export default function PedidoDetallePage() {
                   <p className="text-sm text-on-surface-variant">Pedido {p.codigo}</p>
                   <h1 className="text-xl font-bold">
                     {p.fecha && p.horaInicio && p.horaFin
-                      ? `${formatRelativeDay(p.fecha)}, ${formatFranja(p.horaInicio, p.horaFin)}`
+                      ? `${formatRelativeDay(p.fecha)}, ${formatFranja(p.horaInicio.slice(0, 5), p.horaFin.slice(0, 5))}`
                       : 'Pendiente de programación'}
                   </h1>
                   <p className="text-sm text-on-surface-variant mt-1">{formatDireccion(p.direccion)}</p>

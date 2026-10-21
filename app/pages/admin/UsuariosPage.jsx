@@ -30,6 +30,7 @@ import { formatCo2, formatDate, formatDireccion } from '../../utils/format'
 import DireccionFields from '../../components/DireccionFields'
 import { direccionAForm, erroresDireccion, limpiarDireccion, validarDireccion } from '../../utils/direccion'
 import { isValidDniNie, isValidEmail, isValidPhoneES } from '../../utils/validators'
+import { combinarUsuario, usuarioAForm } from '../../utils/usuario'
 
 const ROLES_FILTRO = [
   ['', 'Todos'],
@@ -174,8 +175,7 @@ function FichaUsuario({ id, onClose, onChanged }) {
                 u={u}
                 onCancel={() => setEditando(false)}
                 onSaved={(nuevo) => {
-                  usuario.setData(nuevo)
-                  setEditando(false)
+                  usuario.setData((actual) => combinarUsuario(actual, nuevo))
                   toast('Datos actualizados')
                   onChanged()
                 }}
@@ -273,7 +273,7 @@ function FichaUsuario({ id, onClose, onChanged }) {
 
 /** Edición de un usuario por administración (HU-07.02) */
 function EditarUsuario({ u, onCancel, onSaved }) {
-  const [datos, setDatos] = useState({ nombre: u.nombrePila, apellidos: u.apellidos, email: u.email, telefono: u.telefono ?? '' })
+  const [datos, setDatos] = useState(() => usuarioAForm(u))
   const [direccion, setDireccion] = useState(() => direccionAForm(u.direccion))
   const [errors, setErrors] = useState({})
   const [guardar, state] = useAction(adminService.editarUsuario)
@@ -285,7 +285,13 @@ function EditarUsuario({ u, onCancel, onSaved }) {
     setErrors({ direccion: vd })
     if (Object.keys(vd).length) return
     try {
-      onSaved(await guardar(u.id, { ...datos, ...(u.direccion ? { direccion: limpiarDireccion(direccion) } : {}) }))
+      const actualizado = await guardar(u.id, { ...datos, ...(u.direccion ? { direccion: limpiarDireccion(direccion) } : {}) })
+      setDatos(usuarioAForm(actualizado, datos))
+      if (u.direccion || actualizado?.direccion) {
+        setDireccion(direccionAForm({ ...direccion, ...actualizado?.direccion }))
+      }
+      setErrors({})
+      onSaved(actualizado)
     } catch (err) {
       if (err.fieldErrors) setErrors({ ...err.fieldErrors, direccion: erroresDireccion(err.fieldErrors) })
     }

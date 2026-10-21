@@ -64,7 +64,7 @@ export default function PagosPage() {
             className={`card text-left transition-colors ${estado === value ? 'ring-2 ring-primary' : 'hover:bg-surface-container-low'}`}
           >
             <p className="text-sm text-on-surface-variant">{label}</p>
-            <p className={`text-xl font-bold tabular-nums ${value === 'FALLIDA' ? 'text-error' : ''}`}>{lista.data ? formatEUR(lista.data.totales[value]) : '—'}</p>
+            <p className={`text-xl font-bold tabular-nums ${value === 'FALLIDA' ? 'text-error' : ''}`}>{lista.data ? lista.data.totales[value] : '—'}</p>
           </button>
         ))}
       </div>
@@ -94,8 +94,7 @@ export default function PagosPage() {
       {/* ⚡ ZONA DINÁMICA Z2 — GET /api/admin/transferencias */}
       <div data-dyn="Z2 · GET /admin/transferencias" className="card !p-0 overflow-hidden">
         <Async state={lista} fallback={<Skeleton className="h-72" />}>
-          {(p) =>
-            p.content.length ? (
+          {(p) =>  p.content.length ? (
               <>
                 {estado === 'PENDIENTE' && (
                   <label className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-on-surface-variant border-b border-surface-container cursor-pointer">
@@ -115,7 +114,7 @@ export default function PagosPage() {
                     )}
                     <button type="button" onClick={() => setAbierta(t.id)} className="flex-1 px-4 py-3 flex items-center gap-3 text-left hover:bg-surface-container-low">
                       <span className="flex-1 min-w-0">
-                        <span className="block font-semibold truncate">{t.ciudadano}</span>
+                        <span className="block font-semibold truncate">{t.ciudadano.nombre}</span>
                         <span className="block text-sm text-on-surface-variant">
                           {t.codigo} · solicitada {formatRelativeDateTime(t.solicitadaEn).toLowerCase()}
                         </span>
@@ -131,8 +130,8 @@ export default function PagosPage() {
               </>
             ) : (
               <EmptyState icon="payments" title={estado === 'PENDIENTE' ? 'No hay transferencias por aceptar' : 'No hay transferencias'} className="!rounded-none" />
-            )
-          }
+            )}
+          
         </Async>
       </div>
 
@@ -218,7 +217,7 @@ function DetallePago({ id, onClose, onChanged }) {
                 <Estado estado={t.estado} transferencia />
               </div>
               <dl className="flex flex-col gap-2 text-sm">
-                <Fila label="Ciudadano" value={t.ciudadano} />
+                <Fila label="Ciudadano" value={t.ciudadano.nombre} />
                 <Fila label="Referencia" value={t.codigo} />
                 <Fila label="IBAN" value={<span className="font-mono">{t.iban.replace(/(.{4})/g, '$1 ').trim()}</span>} />
                 <Fila label="Solicitada" value={formatRelativeDateTime(t.solicitadaEn)} />
@@ -247,7 +246,7 @@ function DetallePago({ id, onClose, onChanged }) {
                   <form onSubmit={submit} className="flex flex-col gap-3 rounded-2xl bg-surface-container-low p-4">
                     {modo === 'COMPLETADA' ? (
                       <p className="text-sm">
-                        ¿Pagar <strong>{formatEUR(t.importe)}</strong> a {t.ciudadano}? La referencia de la transferencia se genera automáticamente.
+                        ¿Pagar <strong>{formatEUR(t.importe)}</strong> a {t.ciudadano.nombre}? La referencia de la transferencia se genera automáticamente.
                       </p>
                     ) : (
                       <FormField

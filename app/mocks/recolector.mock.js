@@ -29,8 +29,8 @@ function vista(p, { detalle = false } = {}) {
     codigo: p.codigo,
     estado: p.estado,
     fecha: p.fecha,
-    horaInicio: p.horaInicio,
-    horaFin: p.horaFin,
+    horaInicio: p.horaInicio.slice(0, 5),
+    horaFin: p.horaFin.slice(0, 5),
     direccion: p.direccion,
     lat: p.direccion.lat,
     lng: p.direccion.lng,
@@ -236,6 +236,8 @@ export const recolectorMock = {
   iniciar(id) {
     const p = asignada(id)
     if (p.estado !== 'PENDIENTE') throw mockError(409, 'ESTADO_NO_VALIDO', 'Solo se puede iniciar una recogida pendiente.')
+    if (p.fecha !== dia(0))
+      throw mockError(409, 'NO_PERMITIDO', 'Solo puedes iniciar una recogida en su fecha programada.')
     p.estado = 'EN_CAMINO'
     p.iniciadoEn = new Date().toISOString()
     return vista(p, { detalle: true })

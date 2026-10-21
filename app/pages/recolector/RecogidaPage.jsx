@@ -28,6 +28,7 @@ import Modal from '../../components/ui/Modal'
 import Mapa from '../../components/mapa/Mapa'
 import { useToast } from '../../components/ui/toastContext'
 import { formatDireccion, formatFranja, formatRelativeDateTime, formatRelativeDay, formatTime } from '../../utils/format'
+import { contarBolsasSinVerificar } from '../../utils/recogida'
 
 export default function RecogidaPage() {
   const { id } = useParams()
@@ -63,7 +64,17 @@ export default function RecogidaPage() {
 
       <Async state={recogida} fallback={<Skeleton className="h-96" />}>
         {(r) => {
-          const sinVerificar = r.bolsas.filter((b) => !b.resultado).length
+          if (!Array.isArray(r?.bolsas) || !Array.isArray(r?.incidencias)) {
+            return (
+              <ErrorState
+                error={{ message: 'El detalle recibido está incompleto: faltan las bolsas o incidencias de la recogida.' }}
+                onRetry={recogida.reload}
+              />
+            )
+          }
+
+          const sinVerificar = contarBolsasSinVerificar(r.bolsas)
+
           return (
             <>
               {/* ⚡ ZONA DINÁMICA Z1 — GET /api/recolector/recogidas/{id} */}
@@ -71,7 +82,7 @@ export default function RecogidaPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-on-surface-variant">
-                      {r.codigo} · {formatRelativeDay(r.fecha)}, {formatFranja(r.horaInicio, r.horaFin)}
+                      {r.codigo} · {formatRelativeDay(r.fecha)}, {formatFranja(r.horaInicio.slice(0, 5), r.horaFin.slice(0, 5))}
                     </p>
                     <h1 className="text-xl font-bold">{formatDireccion(r.direccion, { conCiudad: false })}</h1>
                     <p className="text-sm text-on-surface-variant">
@@ -93,7 +104,8 @@ export default function RecogidaPage() {
                     <Icon name="call" className="text-[18px]" /> Llamar a {r.ciudadano.nombre}
                   </a>
                 </div>
-                <Mapa puntos={[{ id: r.id, lat: r.lat, lng: r.lng, etiqueta: '●', color: r.estado === 'EN_CAMINO' ? 'azul' : 'primary' }]} className="h-44" />
+
+                <Mapa puntos={[{ id: r.id, lat: r.direccion.lat, lng: r.direccion.lng, etiqueta: '●', color: r.estado === 'EN_CAMINO' ? 'azul' : 'primary' }]} className="h-44" />
                 {r.iniciadoEn && (
                   <p className="text-xs text-on-surface-variant">
                     Iniciada a las {formatTime(r.iniciadoEn)}
@@ -125,7 +137,7 @@ export default function RecogidaPage() {
                     tipo={nombreTipo(b.tipoEnvase)}
                     editable={r.estado === 'EN_CAMINO'}
                     recogidaId={r.id}
-                    onSaved={(nueva) => recogida.setData(nueva)}
+                    onSaved={() => recogida.reload()}
                   />
                 ))}
               </section>

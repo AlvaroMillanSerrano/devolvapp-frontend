@@ -70,7 +70,6 @@ function FormularioPerfil({ usuario, onSaved }) {
       const res = await guardar({ ...datos, ...(esCiudadano ? { direccion: limpiarDireccion(direccion) } : {}) })
       const { avisoZona, ...usuarioNuevo } = res
       updateUser(usuarioNuevo)
-      onSaved(usuarioNuevo)
       setAviso(avisoZona)
       toast('Datos guardados')
     } catch (err) {

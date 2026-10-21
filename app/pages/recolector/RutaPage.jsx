@@ -92,7 +92,7 @@ export default function RutaPage() {
                     {p.orden}. {formatDireccion(p.direccion, { conCiudad: false })}
                   </strong>
                   <br />
-                  {formatFranja(p.horaInicio, p.horaFin)} · {p.numBolsas} bolsas
+                  {formatFranja(p.horaInicio.slice(0, 5), p.horaFin.slice(0, 5))} · {p.numBolsas} bolsas
                   <br />
                   <Link to={`/recolector/recogidas/${p.id}`}>Abrir recogida</Link>
                 </span>
@@ -144,7 +144,7 @@ export default function RutaPage() {
                           <span className="flex-1 min-w-0 text-sm">
                             <span className="block font-semibold truncate">{formatDireccion(p.direccion, { conCiudad: false })}</span>
                             <span className="block text-on-surface-variant">
-                              {formatFranja(p.horaInicio, p.horaFin)} · {formatNumber(p.distanciaDesdeAnteriorKm, { maximumFractionDigits: 1 })} km
+                              {formatFranja(p.horaInicio.slice(0, 5), p.horaFin.slice(0, 5))} · {formatNumber(p.distanciaDesdeAnteriorKm, { maximumFractionDigits: 1 })} km
                             </span>
                           </span>
                           {p.orden === 1 ? <span className="text-xs font-bold text-primary">Siguiente</span> : <Estado estado={p.estado} />}

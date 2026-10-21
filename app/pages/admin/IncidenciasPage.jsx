@@ -17,7 +17,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useApi, useAction } from '../../hooks/useApi'
 import { useTiposEnvase, useTiposIncidencia } from '../../hooks/useParametros'
 import { adminService } from '../../api/adminService'
-import Async, { EmptyState, Skeleton } from '../../components/ui/Async'
+import Async, { EmptyState, ErrorState, Skeleton } from '../../components/ui/Async'
 import Estado from '../../components/ui/Estado'
 import { estadoLabel } from '../../components/ui/estados'
 import { Alert, Spinner } from '../../components/ui/FormField'
@@ -25,6 +25,7 @@ import Modal from '../../components/ui/Modal'
 import Paginacion from '../../components/ui/Paginacion'
 import { useToast } from '../../components/ui/toastContext'
 import { formatDireccion, formatFranja, formatRelativeDateTime, formatRelativeDay } from '../../utils/format'
+import { obtenerNombreCiudadano } from '../../utils/recogida'
 
 const ESTADOS = [
   ['', 'Todas'],
@@ -143,8 +144,14 @@ function DetalleIncidencia({ id, onClose, onChanged }) {
       {/* ⚡ ZONA DINÁMICA Z2 — GET /api/admin/incidencias/{id} */}
       <div data-dyn="Z2 · GET /admin/incidencias/{id}">
         <Async state={inc} fallback={<Skeleton className="h-96" />}>
-          {(i) => (
-            <div className="flex flex-col gap-5">
+          {(i) =>
+            !Array.isArray(i?.recogida?.bolsas) || !Array.isArray(i?.historial) ? (
+              <ErrorState
+                error={{ message: 'El servidor devolvió un detalle de incidencia incompleto.' }}
+                onRetry={inc.reload}
+              />
+            ) : (
+              <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold text-lg">{i.tipoNombre}</span>
@@ -160,10 +167,10 @@ function DetalleIncidencia({ id, onClose, onChanged }) {
                   <Estado estado={i.recogida.estado} />
                 </div>
                 <p>
-                  {formatRelativeDay(i.recogida.fecha)}, {formatFranja(i.recogida.horaInicio, i.recogida.horaFin)} · {formatDireccion(i.recogida.direccion)}
+                  {formatRelativeDay(i.recogida.fecha)}, {formatFranja(i.recogida.horaInicio.slice(0, 5), i.recogida.horaFin.slice(0, 5))} · {formatDireccion(i.recogida.direccion)}
                 </p>
                 <p className="text-on-surface-variant">
-                  Ciudadano: {i.recogida.ciudadano} · Recolector: {i.recogida.recolector?.nombre ?? 'sin asignar'}
+                  Ciudadano: {obtenerNombreCiudadano(i.recogida.ciudadano)} · Recolector: {i.recogida.recolector?.nombre ?? 'sin asignar'}
                 </p>
                 <ul className="flex flex-col gap-1 mt-1">
                   {i.recogida.bolsas.map((b) => (
@@ -229,8 +236,9 @@ function DetalleIncidencia({ id, onClose, onChanged }) {
                   ))}
                 </ol>
               </section>
-            </div>
-          )}
+              </div>
+            )
+          }
         </Async>
       </div>
     </Modal>

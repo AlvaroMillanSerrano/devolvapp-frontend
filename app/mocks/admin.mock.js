@@ -41,7 +41,7 @@ const recogidaResumen = (p) => ({
   codigo: p.codigo,
   estado: p.estado,
   fecha: p.fecha,
-  horaInicio: p.horaInicio,
+  horaInicio: p.horaInicio.slice(0, 5),
   horaFin: p.horaFin,
   zona: zonaPorId(p.zonaId)?.nombre,
   direccion: p.direccion,

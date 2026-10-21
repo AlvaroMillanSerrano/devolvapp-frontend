@@ -13,7 +13,7 @@ export default function PedidoCard({ pedido: p }) {
       <span className="flex-1 min-w-0">
         <span className="flex items-center gap-2 flex-wrap">
           {p.fecha && p.horaInicio && p.horaFin ? (
-            <><span className="font-semibold">{formatRelativeDay(p.fecha)}</span><span className="text-sm text-on-surface-variant">{formatFranja(p.horaInicio, p.horaFin)}</span></>
+            <><span className="font-semibold">{formatRelativeDay(p.fecha)}</span><span className="text-sm text-on-surface-variant">{formatFranja(p.horaInicio.slice(0, 5), p.horaFin.slice(0, 5))}</span></>
           ) : <span className="font-semibold">Pendiente de programación</span>}
         </span>
         <span className="block text-sm text-on-surface-variant">

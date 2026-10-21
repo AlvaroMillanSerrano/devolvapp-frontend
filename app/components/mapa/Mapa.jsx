@@ -12,6 +12,7 @@ import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from 'react-
  */
 export default function Mapa({ puntos = [], ruta, className = 'h-80', onSelect }) {
   const centro = puntos[0] ? [puntos[0].lat, puntos[0].lng] : [36.7213, -4.4214]
+
   return (
     <div className={`rounded-2xl overflow-hidden relative z-0 ${className}`}>
       <MapContainer center={centro} zoom={14} scrollWheelZoom className="h-full w-full">

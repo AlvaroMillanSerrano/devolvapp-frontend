@@ -120,7 +120,7 @@ export default function RecogidasAdminPage() {
                   >
                     <span className="order-2 lg:order-none text-on-surface-variant lg:text-on-surface">
                       {formatRelativeDay(r.fecha)}
-                      <span className="block text-xs text-on-surface-variant">{formatFranja(r.horaInicio, r.horaFin)}</span>
+                      <span className="block text-xs text-on-surface-variant">{formatFranja(r.horaInicio != null ? r.horaInicio.slice(0, 5) : "Sin hora" , r.horaFin != null ? r.horaFin.slice(0, 5) : "Sin hora")}</span>
                     </span>
                     <span className="min-w-0 col-span-2 lg:col-span-1 order-1 lg:order-none">
                       <span className="block font-semibold truncate">{formatDireccion(r.direccion, { conCiudad: false })}</span>
@@ -184,7 +184,7 @@ function DetalleRecogida({ id, onClose, onChanged }) {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-lg font-bold">
-                      {formatRelativeDay(x.fecha)}, {formatFranja(x.horaInicio, x.horaFin)}
+                      {formatRelativeDay(x.fecha)}, {formatFranja(x.horaInicio.slice(0, 5), x.horaFin.slice(0, 5))}
                     </p>
                     <p>{formatDireccion(x.direccion)}</p>
                     <p className="text-on-surface-variant">

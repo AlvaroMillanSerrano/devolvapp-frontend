@@ -206,7 +206,7 @@ function ZonaCard({ zona: z, destacada, recolectores, onChange, onEditar, onFran
                   className="h-8 px-3 rounded-full bg-surface-container-low hover:bg-surface-container text-xs font-medium"
                   title="Editar franja"
                 >
-                  {formatFranja(f.horaInicio, f.horaFin)} <span className="text-on-surface-variant">· {f.capacidad}</span>
+                  {formatFranja(f.horaInicio.slice(0, 5), f.horaFin.slice(0, 5))} <span className="text-on-surface-variant">· {f.capacidad}</span>
                 </button>
               ))}
               <button
@@ -313,7 +313,12 @@ function ZonaModal({ zona, cps, onClose, onDone }) {
 
 function FranjaModal({ zonaId, diaSemana, franja, onClose, onDone }) {
   const toast = useToast()
-  const [form, setForm] = useState(() => franja ?? { diaSemana, horaInicio: '10:00', horaFin: '12:00', capacidad: 5 })
+  const [form, setForm] = useState(() => ({
+    diaSemana: franja?.diaSemana ?? diaSemana,
+    horaInicio: franja?.horaInicio ?? '10:00',
+    horaFin: franja?.horaFin ?? '12:00',
+    capacidad: franja?.capacidad ?? 5,
+  }))
   const [guardar, guardarState] = useAction((data) => (franja ? adminService.editarFranja(franja.id, data) : adminService.crearFranja(zonaId, data)))
   const [borrar, borrarState] = useAction(adminService.borrarFranja)
   const error = guardarState.error ?? borrarState.error

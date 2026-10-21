@@ -83,15 +83,14 @@ export default function NuevoPedidoPage() {
   }
 
   const confirmar = async () => {
+    if (!franjaSeleccionada) return
     const nextErrors = validarBolsas(bolsas, listaTipos)
     setErrores(nextErrors)
     if (Object.values(nextErrors).some(Boolean)) return
     try {
       const pedido = await crear({
-        ...(franjaSeleccionada && {
-          fecha: franjaSeleccionada.fecha,
-          franjaId: franjaSeleccionada.franjaId,
-        }),
+        fecha: franjaSeleccionada.fecha,
+        franjaId: franjaSeleccionada.franjaId,
         bolsas: bolsas.map((bolsa) => ({
           contenidos: Object.fromEntries(Object.entries(bolsa.contenidos).map(([codigo, cantidad]) => [codigo, Number(cantidad)])),
         })),
@@ -181,7 +180,7 @@ export default function NuevoPedidoPage() {
                           onClick={() => setFranjaSeleccionada(franja)}
                           className={`rounded-xl border p-3 text-left transition-colors ${seleccionada ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-surface-container hover:bg-surface-container-low'}`}
                         >
-                          <span className="block font-semibold">{formatFranja(franja.horaInicio, franja.horaFin)}</span>
+                          <span className="block font-semibold">{formatFranja(franja.horaInicio.slice(0, 5), franja.horaFin.slice(0, 5))}</span>
                           <span className="block text-xs text-on-surface-variant mt-0.5">{franja.plazasLibres} {franja.plazasLibres === 1 ? 'plaza disponible' : 'plazas disponibles'}</span>
                         </button>
                       )
@@ -190,7 +189,7 @@ export default function NuevoPedidoPage() {
                 </>
               )}
               {!franjaSeleccionada && (
-                <p className="text-xs text-on-surface-variant">Si no eliges una franja, guardaremos la solicitud pendiente de programación.</p>
+                <p className="text-xs text-on-surface-variant">Selecciona una franja disponible para poder solicitar la recogida.</p>
               )}
             </section>
           )
@@ -250,7 +249,7 @@ export default function NuevoPedidoPage() {
       <div className="card bg-primary/5 text-sm text-on-surface-variant">
         {franjaSeleccionada
           ? `Recogeremos tus bolsas el ${formatRelativeDay(franjaSeleccionada.fecha).toLowerCase()}, entre ${formatFranja(franjaSeleccionada.horaInicio, franjaSeleccionada.horaFin)}.`
-          : 'Si no eliges franja, la solicitud quedará pendiente de programación.'}
+          : 'La fecha y la franja son obligatorias para solicitar la recogida.'}
       </div>
 
       <BarraInferior>
@@ -258,7 +257,7 @@ export default function NuevoPedidoPage() {
           <p className="font-bold">{bolsas.length} {bolsas.length === 1 ? 'bolsa' : 'bolsas'} · {totalEnvases} envases</p>
           {estimado != null && totalEnvases > 0 && <p className="text-sm text-on-surface-variant">Estimación: {formatEUR(estimado)}{co2Estimado > 0 && <span className="text-primary font-semibold"> · {formatCo2(co2Estimado)} CO₂ evitados</span>}</p>}
         </div>
-        <button type="button" className="btn btn-primary btn-lg" disabled={crearState.loading || !bolsas.length} onClick={confirmar}>
+        <button type="button" className="btn btn-primary btn-lg" disabled={crearState.loading || !bolsas.length || !franjaSeleccionada} onClick={confirmar}>
           {crearState.loading && <Spinner />}Solicitar recogida
         </button>
       </BarraInferior>

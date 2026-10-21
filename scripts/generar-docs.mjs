@@ -191,5 +191,3 @@ for (const [servicio, rol] of Object.entries(ROL_POR_SERVICIO)) {
 mkdirSync(join(root, 'docs'), { recursive: true })
 writeFileSync(join(root, 'docs', 'ZONAS_DINAMICAS.md'), md)
 writeFileSync(join(root, 'docs', 'API_ENDPOINTS.md'), api)
-console.log(`✓ docs/ZONAS_DINAMICAS.md (${vistas.length} vistas)`)
-console.log(`✓ docs/API_ENDPOINTS.md (${endpoints.length} endpoints)`)

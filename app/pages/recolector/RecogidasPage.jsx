@@ -109,15 +109,15 @@ function RecogidaItem({ r }) {
       }`}
     >
       <span className="w-14 text-center shrink-0">
-        <span className={`block font-bold ${r.estado === 'CANCELADA' ? 'line-through' : ''}`}>{r.horaInicio}</span>
-        <span className="block text-xs text-on-surface-variant">{r.horaFin}</span>
+        <span className={`block font-bold ${r.estado === 'CANCELADA' ? 'line-through' : ''}`}>{r.horaInicio.slice(0, 5)}</span>
+        <span className="block text-xs text-on-surface-variant">{r.horaFin.slice(0, 5)}</span>
       </span>
       <span className="flex-1 min-w-0">
         <span className={`block font-semibold truncate ${r.estado === 'CANCELADA' ? 'line-through' : ''}`}>{formatDireccion(r.direccion, { conCiudad: false })}</span>
         <span className="block text-sm text-on-surface-variant">
           {r.codigo} · {r.numBolsas} {r.numBolsas === 1 ? 'bolsa' : 'bolsas'} · {r.totalEnvases} env. · CP {r.direccion.codigoPostal}
         </span>
-        <span className="sr-only">Franja {formatFranja(r.horaInicio, r.horaFin)}</span>
+        <span className="sr-only">Franja {formatFranja(r.horaInicio.slice(0, 5), r.horaFin.slice(0, 5))}</span>
       </span>
       <Estado estado={r.estado} />
     </Link>

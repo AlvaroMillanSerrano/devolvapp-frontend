@@ -34,8 +34,8 @@ const resumen = (p) => ({
   estado: p.estado,
   creadoEn: p.creadoEn,
   fecha: p.fecha,
-  horaInicio: p.horaInicio,
-  horaFin: p.horaFin,
+  horaInicio: p.horaInicio.slice(0, 5),
+  horaFin: p.horaFin.slice(0, 5),
   numBolsas: p.bolsas.length,
   totalEnvases: p.bolsas.reduce((s, b) => s + b.cantidad, 0),
   importeCiudadano: p.liquidacion?.parteCiudadano ?? null,
@@ -100,13 +100,14 @@ export const ciudadanoMock = {
     const zona = zonaDeCp(u.direccion?.codigoPostal)
     if (!zona) return { codigoPostal: u.direccion?.codigoPostal ?? null, zona: null, huecos: [] }
     const huecos = []
-    for (let i = 1; i <= 14; i++) {
+    for (let i = 0; i < 14; i++) {
       const fecha = dia(i)
       franjas
         // Solo se ofrecen los días con franjas Y recolector asignado (HU-07.06)
         .filter((f) => f.zonaId === zona.id && f.diaSemana === diaSemana(fecha) && recolectorPara(zona, fecha))
         .sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
         .forEach((f) => {
+          if (fecha === dia(0) && new Date(`${fecha}T${f.horaFin}:00`) <= new Date()) return
           const plazasLibres = Math.max(0, f.capacidad - ocupacion(fecha, f.id))
           huecos.push({ fecha, franjaId: f.id, horaInicio: f.horaInicio, horaFin: f.horaFin, plazasLibres, completa: plazasLibres === 0 })
         })
@@ -114,12 +115,23 @@ export const ciudadanoMock = {
     return { codigoPostal: u.direccion.codigoPostal, zona: { id: zona.id, nombre: zona.nombre }, huecos }
   },
 
-  crearPedido({ bolsas }) {
+  crearPedido({ fecha, franjaId, bolsas }) {
     const u = yo()
     if (!u.direccion) throw mockError(422, 'DOMICILIO_REQUERIDO', 'Completa un domicilio antes de solicitar la recogida.')
+    const fieldErrors = {}
+    if (!fecha) fieldErrors.fecha = 'La fecha de recogida es obligatoria'
+    if (!franjaId) fieldErrors.franjaId = 'La franja de recogida es obligatoria'
+    if (fecha && fecha < dia(0)) fieldErrors.fecha = 'La fecha de recogida no puede estar en el pasado'
+    const zona = zonaDeCp(u.direccion.codigoPostal)
+    const franja = franjas.find((item) =>
+      item.id === Number(franjaId) && item.zonaId === zona?.id && item.diaSemana === diaSemana(fecha))
+    if (fecha && franjaId && !franja) fieldErrors.franjaId = 'La franja seleccionada no está disponible para esa fecha'
+    if (franja && new Date(`${fecha}T${franja.horaFin}:00`) <= new Date())
+      fieldErrors.fecha = 'La franja horaria ya ha finalizado'
+    if (Object.keys(fieldErrors).length)
+      throw mockError(400, 'VALIDATION_ERROR', 'Selecciona una fecha y una franja disponibles.', fieldErrors)
     if (!bolsas?.length) throw mockError(400, 'VALIDATION_ERROR', 'Añade al menos una bolsa.')
     if (bolsas.length > PARAMETROS.pedidos.maxBolsas) throw mockError(400, 'VALIDATION_ERROR', `Máximo ${PARAMETROS.pedidos.maxBolsas} bolsas por pedido.`)
-    const fieldErrors = {}
     bolsas.forEach((bolsa, index) => {
       const entries = Object.entries(bolsa.contenidos ?? {})
       if (!entries.length) fieldErrors[`bolsas[${index}].contenidos`] = 'Añade al menos un tipo de envase'
@@ -138,13 +150,13 @@ export const ciudadanoMock = {
       id,
       codigo: `P-${id}`,
       ciudadanoId: u.id,
-      zonaId: null,
-      recolectorId: null,
+      zonaId: franja.zonaId,
+      recolectorId: recolectorPara(zona, fecha),
       direccion: { ...u.direccion },
-      fecha: null,
-      franjaId: null,
-      horaInicio: null,
-      horaFin: null,
+      fecha,
+      franjaId: franja.id,
+      horaInicio: franja.horaInicio,
+      horaFin: franja.horaFin,
       estado: 'PENDIENTE',
       creadoEn: new Date().toISOString(),
       iniciadoEn: null,
